@@ -1,40 +1,43 @@
 pipeline {
     agent any
-
-    triggers {
-        githubPush()
-    }
-
+    
     environment {
-        DOCKER_USERNAME = credentials('a4d018fb-620b-48b7-a2b3-940e89cec33a') 
-        DOCKER_PASSWORD = credentials('a4d018fb-620b-48b7-a2b3-940e89cec33a')
+        DOCKER_HUB_REP = 'ibraheem15/jennkins-mlops'
+        DOCKER_HUB_CREDENTIALS_ID = 'a4d018fb-620b-48b7-a2b3-940e89cec33a'
+        //iMAGE tag
+        DOCKER_IMAGE_TAG = "${env.BUILD_ID}"
     }
 
     stages {
-        stage('Checkout code') {
+        stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Log in to DockerHub') {
+        stage('Build') {
             steps {
                 script {
-                    sh 'export DOCKER_TLS_VERIFY=0'
-                    sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                    // Build the Docker image
+                    docker.build("${DOCKER_HUB_REP}:${DOCKER_IMAGE_TAG}")
                 }
             }
         }
-
-        stage('Build and push Docker image') {
+        stage('Login to Docker Hub') {
             steps {
                 script {
-                    def imageName = "${DOCKER_USERNAME}/linear-regression-app1"
-                    sh """
-                        docker build -t ${imageName} .
-                        docker tag ${imageName} ${imageName}:latest
-                        docker push ${imageName}:latest
-                    """
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_HUB_CREDENTIALS_ID) {
+                        echo "Logged in successfully"
+                    }
+                }
+            }
+        }
+        
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    // Push the Docker image
+                    docker.image("${DOCKER_HUB_REP}:${DOCKER_IMAGE_TAG}").push()
                 }
             }
         }
