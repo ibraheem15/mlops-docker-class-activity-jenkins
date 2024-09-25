@@ -20,7 +20,7 @@ pipeline {
         stage('Log in to DockerHub') {
             steps {
                 script {
-                    sh 'export DOCKER_TLS_VERIFY="0"'
+                    sh 'export DOCKER_TLS_VERIFY=0'
                     sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
                 }
             }
