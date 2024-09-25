@@ -20,6 +20,7 @@ pipeline {
         stage('Log in to DockerHub') {
             steps {
                 script {
+                    sh 'export DOCKER_TLS_VERIFY="0"'
                     sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
                 }
             }
@@ -28,7 +29,7 @@ pipeline {
         stage('Build and push Docker image') {
             steps {
                 script {
-                    def imageName = "${DOCKER_USERNAME}/linear-regression-app"
+                    def imageName = "${DOCKER_USERNAME}/linear-regression-app1"
                     sh """
                         docker build -t ${imageName} .
                         docker tag ${imageName} ${imageName}:latest
